@@ -1,0 +1,29 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: falco
+  labels:
+    deployment: helm
+    name: falco
+    tier: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "-70"
+spec:
+  project: cluster-addons
+  source:
+    repoURL: https://falcosecurity.github.io/charts
+    chart: falco
+    targetRevision: 2.0.17
+    helm:
+      parameters:
+      - name: driver.enabled
+        value: "true"
+      - name: driver.kind
+        value: ebpf
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: falco
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true

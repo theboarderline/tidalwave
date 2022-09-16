@@ -1,0 +1,33 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: opa-gatekeeper
+  labels:
+    deployment: helm
+    name: opa-gatekeeper
+    tier: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "-100"
+spec:
+  generators: []
+  template:
+    metadata:
+      name: opa-gatekeeper-replaceme
+      labels:
+        deployment: helm
+        name: opa-gatekeeper
+        tier: cluster
+      annotations:
+        argocd.argoproj.io/sync-wave: "-70"
+    project: cluster-addons
+    source:
+      repoURL: https://open-policy-agent.github.io/gatekeeper/charts
+      chart: gatekeeper
+      targetRevision: 3.9.0
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gatekeeper-system
+    syncPolicy:
+      syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cert-manager
+  labels:
+    deployment: helm
+    name: cert-manager
+    tier: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "-100"
+spec:
+  generators: []
+  template:
+    metadata:
+      name: cert-manager-replaceme
+      labels:
+        deployment: helm
+        name: cert-manager
+        tier: cluster
+      annotations:
+        argocd.argoproj.io/sync-wave: "-70"
+    project: cluster-addons
+    source:
+      repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: v1.9.1
+      helm:
+        parameters:
+        - name: installCRDs
+          value: "true"
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: cert-manager
+    syncPolicy:
+      syncOptions:
+      - CreateNamespace=true
