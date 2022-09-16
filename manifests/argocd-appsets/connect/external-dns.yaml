@@ -1,0 +1,33 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: external-dns
+  labels:
+    deployment: helm
+    name: external-dns
+    tier: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "-100"
+spec:
+  generators: []
+  template:
+    metadata:
+      name: external-dns-replaceme
+      labels:
+        deployment: helm
+        name: external-dns
+        tier: cluster
+      annotations:
+        argocd.argoproj.io/sync-wave: "-50"
+    project: cluster-addons
+    source:
+      repoURL: https://kubernetes-sigs.github.io/external-dns/
+      chart: external-dns
+      targetRevision: 1.11.0
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: external-dns
+    syncPolicy:
+      syncOptions:
+      - CreateNamespace=true

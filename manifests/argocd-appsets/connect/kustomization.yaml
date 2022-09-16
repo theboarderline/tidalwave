@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-- cert-manager.yaml
-- falco.yaml
-- opa-gatekeeper.yaml
-- external-secrets.yaml
+- external-dns.yaml
+- ingress-nginx.yaml
+- istio.yaml
