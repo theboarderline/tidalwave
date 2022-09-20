@@ -11,3 +11,15 @@ func CreateCluster(c ClusterCreater) error {
 	}
 	return nil
 }
+
+type ClusterDeleter interface {
+	Delete() error
+}
+
+func DeleteCluster(c ClusterDeleter) error {
+	err := c.Delete()
+	if err != nil {
+		return err
+	}
+	return nil
+}

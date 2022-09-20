@@ -11,12 +11,13 @@ type Subnetwork struct {
 	Name         string
 	ProjectID    string
 	Region       string
+	Network      string
 	NodesCidr    string
 	PodsCidr     string
 	ServicesCidr string
 }
 
-func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClient, network *string) (*computepb.Subnetwork, error) {
+func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClient) (*computepb.Subnetwork, error) {
 	if s.exists(ctx, client) {
 		return s.get(ctx, client)
 	}
@@ -25,7 +26,7 @@ func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClie
 			IpCidrRange:           &s.NodesCidr,
 			Name:                  &s.Name,
 			Region:                &s.Region,
-			Network:               network,
+			Network:               &s.Network,
 			PrivateIpGoogleAccess: boolPtr(true),
 			SecondaryIpRanges: []*computepb.SubnetworkSecondaryRange{
 				{
@@ -68,4 +69,23 @@ func (s *Subnetwork) get(ctx context.Context, client *compute.SubnetworksClient)
 func (s *Subnetwork) exists(ctx context.Context, client *compute.SubnetworksClient) bool {
 	_, err := s.get(ctx, client)
 	return err == nil
+}
+
+func (s *Subnetwork) delete(ctx context.Context, client *compute.SubnetworksClient) error {
+	if s.exists(ctx, client) {
+		req := &computepb.DeleteSubnetworkRequest{
+			Project:    s.ProjectID,
+			Region:     s.Region,
+			Subnetwork: s.Name,
+		}
+		op, err := client.Delete(ctx, req)
+		if err != nil {
+			return err
+		}
+		err = op.Wait(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

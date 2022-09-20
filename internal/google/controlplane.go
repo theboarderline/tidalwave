@@ -2,17 +2,17 @@ package google
 
 import (
 	"context"
-	"fmt"
 
 	compute "cloud.google.com/go/compute/apiv1"
+	container "cloud.google.com/go/container/apiv1"
+	"github.com/kyokomi/emoji/v2"
 )
 
 type Controlplane struct {
-	Name      string
-	ProjectID string
-	Region    string
 	Vpc
 	Subnetwork
+	Router
+	Cluster
 }
 
 func boolPtr(b bool) *bool {
@@ -25,10 +25,7 @@ func strPtr(s string) *string {
 
 func (c *Controlplane) Create() error {
 	ctx := context.Background()
-	c.Vpc = Vpc{
-		Name:      c.Name,
-		ProjectID: c.ProjectID,
-	}
+
 	vpcClient, err := compute.NewNetworksRESTClient(ctx)
 	if err != nil {
 		return err
@@ -38,21 +35,92 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	c.Subnetwork = Subnetwork{
-		Name:      fmt.Sprintf("%s-controlplane", c.Name),
-		ProjectID: c.ProjectID,
-		Region:    c.Region,
-		NodesCidr: c.Subnetwork.NodesCidr,
-		PodsCidr:  c.Subnetwork.PodsCidr,
-	}
+	emoji.Println("Controlplane VPC created :check_mark_button:")
+
+	c.Subnetwork.Network = network.GetSelfLink()
 	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
 	if err != nil {
 		return err
 	}
 	defer subnetClient.Close()
-	_, err = c.Subnetwork.create(ctx, subnetClient, network.SelfLink)
+	_, err = c.Subnetwork.create(ctx, subnetClient)
 	if err != nil {
 		return err
 	}
+	emoji.Println("Controlplane subnetwork created :check_mark_button:")
+
+	c.Router.Network = network.GetSelfLink()
+	routerClient, err := compute.NewRoutersRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer routerClient.Close()
+	_, err = c.Router.create(ctx, routerClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane router created :check_mark_button:")
+
+	clusterClient, err := container.NewClusterManagerClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer clusterClient.Close()
+	_, err = c.Cluster.create(ctx, clusterClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane cluster created :check_mark_button:")
+
+	return nil
+}
+
+func (c *Controlplane) Delete() error {
+	ctx := context.Background()
+
+	clusterClient, err := container.NewClusterManagerClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer clusterClient.Close()
+	err = c.Cluster.delete(ctx, clusterClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane cluster destroyed :cross_mark_button:")
+
+	routerClient, err := compute.NewRoutersRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer routerClient.Close()
+	err = c.Router.delete(ctx, routerClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane router destroyed :cross_mark_button:")
+
+	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer subnetClient.Close()
+	err = c.Subnetwork.delete(ctx, subnetClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane subnetwork destroyed :cross_mark_button:")
+
+	vpcClient, err := compute.NewNetworksRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer vpcClient.Close()
+	err = c.Vpc.delete(ctx, vpcClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane VPC destroyed :cross_mark_button:")
+
 	return nil
 }

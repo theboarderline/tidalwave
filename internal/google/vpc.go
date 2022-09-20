@@ -50,3 +50,21 @@ func (n *Vpc) exists(ctx context.Context, client *compute.NetworksClient) bool {
 	_, err := n.get(ctx, client)
 	return err == nil
 }
+
+func (n *Vpc) delete(ctx context.Context, client *compute.NetworksClient) error {
+	if n.exists(ctx, client) {
+		req := &computepb.DeleteNetworkRequest{
+			Project: n.ProjectID,
+			Network: n.Name,
+		}
+		op, err := client.Delete(ctx, req)
+		if err != nil {
+			return err
+		}
+		err = op.Wait(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
