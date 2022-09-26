@@ -27,15 +27,15 @@ func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClie
 			Name:                  &s.Name,
 			Region:                &s.Region,
 			Network:               &s.Network,
-			PrivateIpGoogleAccess: boolPtr(true),
+			PrivateIpGoogleAccess: BoolPtr(true),
 			SecondaryIpRanges: []*computepb.SubnetworkSecondaryRange{
 				{
 					IpCidrRange: &s.PodsCidr,
-					RangeName:   strPtr("pods"),
+					RangeName:   StrPtr("pods"),
 				},
 				{
 					IpCidrRange: &s.ServicesCidr,
-					RangeName:   strPtr("services"),
+					RangeName:   StrPtr("services"),
 				},
 			},
 		},

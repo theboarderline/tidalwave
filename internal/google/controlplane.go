@@ -13,13 +13,14 @@ type Controlplane struct {
 	Subnetwork
 	Router
 	Cluster
+	Firewalls []Firewall
 }
 
-func boolPtr(b bool) *bool {
+func BoolPtr(b bool) *bool {
 	return &b
 }
 
-func strPtr(s string) *string {
+func StrPtr(s string) *string {
 	return &s
 }
 
@@ -72,11 +73,38 @@ func (c *Controlplane) Create() error {
 	}
 	emoji.Println("Controlplane cluster created :check_mark_button:")
 
+	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer firewallClient.Close()
+	for i := range c.Firewalls {
+		c.Firewalls[i].Network = network.GetSelfLink()
+		_, err = c.Firewalls[i].create(ctx, firewallClient)
+		if err != nil {
+			return err
+		}
+		emoji.Printf("Controlplane firewallrule %s created :check_mark_button:", c.Firewalls[i].Name)
+	}
+
 	return nil
 }
 
 func (c *Controlplane) Delete() error {
 	ctx := context.Background()
+
+	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer firewallClient.Close()
+	for i := range c.Firewalls {
+		err = c.Firewalls[i].delete(ctx, firewallClient)
+		if err != nil {
+			return err
+		}
+		emoji.Printf("Controlplane firewallrule %s deleted :check_mark_button:", c.Firewalls[i].Name)
+	}
 
 	clusterClient, err := container.NewClusterManagerClient(ctx)
 	if err != nil {

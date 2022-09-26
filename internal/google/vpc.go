@@ -18,7 +18,7 @@ func (n *Vpc) create(ctx context.Context, client *compute.NetworksClient) (*comp
 	}
 	req := &computepb.InsertNetworkRequest{
 		NetworkResource: &computepb.Network{
-			AutoCreateSubnetworks: boolPtr(false),
+			AutoCreateSubnetworks: BoolPtr(false),
 			Name:                  &n.Name,
 		},
 		Project: n.ProjectID,

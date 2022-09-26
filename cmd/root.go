@@ -13,11 +13,14 @@ import (
 
 var cfgFile string
 
+var Version string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "tidalwave",
-	Short: "Control the creation of DevOps controlplanes",
-	Long:  "Control the creation of DevOps controlplanes",
+	Use:     "tidalwave",
+	Short:   "Control the creation of DevOps controlplanes",
+	Long:    "Control the creation of DevOps controlplanes",
+	Version: Version,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -24,8 +24,8 @@ func (r *Router) create(ctx context.Context, client *compute.RoutersClient) (*co
 			Nats: []*computepb.RouterNat{
 				{
 					Name:                          &r.Name,
-					NatIpAllocateOption:           strPtr("AUTO_ONLY"),
-					SourceSubnetworkIpRangesToNat: strPtr("ALL_SUBNETWORKS_ALL_IP_RANGES"),
+					NatIpAllocateOption:           StrPtr("AUTO_ONLY"),
+					SourceSubnetworkIpRangesToNat: StrPtr("ALL_SUBNETWORKS_ALL_IP_RANGES"),
 				},
 			},
 			Network: &r.Network,
