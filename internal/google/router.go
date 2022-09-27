@@ -80,3 +80,34 @@ func (r *Router) delete(ctx context.Context, client *compute.RoutersClient) erro
 	}
 	return nil
 }
+
+func (r *Router) update(ctx context.Context, client *compute.RoutersClient) (*computepb.Router, error) {
+	if r.exists(ctx, client) {
+		return r.get(ctx, client)
+	}
+	req := &computepb.PatchRouterRequest{
+		RouterResource: &computepb.Router{
+			Name: &r.Name,
+			Nats: []*computepb.RouterNat{
+				{
+					Name:                          &r.Name,
+					NatIpAllocateOption:           StrPtr("AUTO_ONLY"),
+					SourceSubnetworkIpRangesToNat: StrPtr("ALL_SUBNETWORKS_ALL_IP_RANGES"),
+				},
+			},
+			Network: &r.Network,
+		},
+		Project: r.ProjectID,
+		Region:  r.Region,
+		Router:  r.Name,
+	}
+	op, err := client.Patch(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	err = op.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return r.get(ctx, client)
+}

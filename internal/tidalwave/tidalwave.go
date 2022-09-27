@@ -23,3 +23,15 @@ func DeleteCluster(c ClusterDeleter) error {
 	}
 	return nil
 }
+
+type ClusterUpdater interface {
+	Update() error
+}
+
+func UpdateCluster(c ClusterUpdater) error {
+	err := c.Update()
+	if err != nil {
+		return err
+	}
+	return nil
+}

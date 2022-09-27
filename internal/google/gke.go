@@ -66,7 +66,7 @@ func (c *Cluster) create(ctx context.Context, client *container.ClusterManagerCl
 							"https://www.googleapis.com/auth/cloud-platform",
 						},
 						Tags: []string{
-							fmt.Sprintf("%s-controlplane-default-pool", c.Name),
+							"default-pool",
 						},
 						DiskType: "pd-ssd",
 						WorkloadMetadataConfig: &containerpb.WorkloadMetadataConfig{
@@ -201,4 +201,126 @@ func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerCl
 		}
 	}
 	return nil
+}
+
+func (c *Cluster) update(ctx context.Context, client *container.ClusterManagerClient) (*containerpb.Cluster, error) {
+	if c.exists(ctx, client) {
+		return c.get(ctx, client)
+	}
+
+	creq := &containerpb.UpdateClusterRequest{
+		Name: fmt.Sprintf("projects/%s/locations/%s/clusters/%s", c.ProjectID, c.Region, c.Name),
+		Update: &containerpb.ClusterUpdate{
+			DesiredAddonsConfig: &containerpb.AddonsConfig{
+				HttpLoadBalancing: &containerpb.HttpLoadBalancing{
+					Disabled: false,
+				},
+				HorizontalPodAutoscaling: &containerpb.HorizontalPodAutoscaling{
+					Disabled: false,
+				},
+				ConfigConnectorConfig: &containerpb.ConfigConnectorConfig{
+					Enabled: true,
+				},
+				GcePersistentDiskCsiDriverConfig: &containerpb.GcePersistentDiskCsiDriverConfig{
+					Enabled: true,
+				},
+				GcpFilestoreCsiDriverConfig: &containerpb.GcpFilestoreCsiDriverConfig{
+					Enabled: true,
+				},
+			},
+			DesiredNodePoolId: "default-pool",
+			DesiredNodePoolAutoscaling: &containerpb.NodePoolAutoscaling{
+				Enabled:      true,
+				MinNodeCount: c.MinNodeCount,
+				MaxNodeCount: c.MaxNodeCount,
+			},
+			DesiredMasterAuthorizedNetworksConfig: &containerpb.MasterAuthorizedNetworksConfig{
+				Enabled:    true,
+				CidrBlocks: c.MasterAuthCidrBlocks,
+			},
+			DesiredBinaryAuthorization: &containerpb.BinaryAuthorization{
+				Enabled: true,
+			},
+			DesiredIntraNodeVisibilityConfig: &containerpb.IntraNodeVisibilityConfig{
+				Enabled: true,
+			},
+			DesiredReleaseChannel: &containerpb.ReleaseChannel{
+				Channel: 1,
+			},
+			DesiredPrivateClusterConfig: &containerpb.PrivateClusterConfig{
+				EnablePrivateNodes:  true,
+				MasterIpv4CidrBlock: c.MasterIpv4CidrBlock,
+			},
+			DesiredDatapathProvider: 0,
+			DesiredShieldedNodes: &containerpb.ShieldedNodes{
+				Enabled: true,
+			},
+		},
+	}
+
+	op, err := client.UpdateCluster(ctx, creq)
+
+	if err != nil {
+		return nil, err
+	}
+
+cstatus:
+	for {
+		s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
+			Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),
+		})
+		if err != nil {
+			return nil, err
+		}
+		switch s.GetStatus().Number() {
+		case 3:
+			break cstatus
+		case 4:
+			return nil, errors.New(s.GetError().Message)
+		}
+	}
+
+	cluster, _ := c.get(ctx, client)
+
+	nreq := &containerpb.UpdateNodePoolRequest{
+		Name:        fmt.Sprintf("projects/%s/locations/%s/clusters/%s/nodePools/default-pool", c.ProjectID, c.Region, c.Name),
+		NodeVersion: "-",
+		ImageType:   cluster.NodeConfig.ImageType,
+		WorkloadMetadataConfig: &containerpb.WorkloadMetadataConfig{
+			Mode: 2,
+		},
+		UpgradeSettings: &containerpb.NodePool_UpgradeSettings{
+			MaxSurge:       1,
+			MaxUnavailable: 1,
+		},
+		Tags: &containerpb.NetworkTags{
+			Tags: []string{
+				"default-pool",
+			},
+		},
+	}
+
+	op, err = client.UpdateNodePool(ctx, nreq)
+
+	if err != nil {
+		return nil, err
+	}
+
+nstatus:
+	for {
+		s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
+			Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),
+		})
+		if err != nil {
+			return nil, err
+		}
+		switch s.GetStatus().Number() {
+		case 3:
+			break nstatus
+		case 4:
+			return nil, errors.New(s.GetError().Message)
+		}
+	}
+
+	return c.get(ctx, client)
 }
