@@ -13,6 +13,7 @@ type Cluster struct {
 	Name                 string
 	ProjectID            string
 	Region               string
+	CryptoKeyName        string
 	Network              string
 	Subnetwork           string
 	MachineType          string
@@ -23,6 +24,7 @@ type Cluster struct {
 	MasterIpv4CidrBlock  string
 }
 
+// Create GKE cluster
 func (c *Cluster) create(ctx context.Context, client *container.ClusterManagerClient) (*containerpb.Cluster, error) {
 	if c.exists(ctx, client) {
 		return c.get(ctx, client)
@@ -48,6 +50,10 @@ func (c *Cluster) create(ctx context.Context, client *container.ClusterManagerCl
 				GcpFilestoreCsiDriverConfig: &containerpb.GcpFilestoreCsiDriverConfig{
 					Enabled: true,
 				},
+			},
+			DatabaseEncryption: &containerpb.DatabaseEncryption{
+				State:   containerpb.DatabaseEncryption_ENCRYPTED,
+				KeyName: c.CryptoKeyName,
 			},
 			Subnetwork: c.Subnetwork,
 			NodePools: []*containerpb.NodePool{
@@ -158,6 +164,7 @@ status:
 	return c.get(ctx, client)
 }
 
+// Get GKE cluster
 func (c *Cluster) get(ctx context.Context, client *container.ClusterManagerClient) (*containerpb.Cluster, error) {
 	req := &containerpb.GetClusterRequest{
 		Name: fmt.Sprintf("projects/%s/locations/%s/clusters/%s", c.ProjectID, c.Region, c.Name),
@@ -170,11 +177,13 @@ func (c *Cluster) get(ctx context.Context, client *container.ClusterManagerClien
 	return resp, nil
 }
 
+// Check if GKE cluster exists
 func (c *Cluster) exists(ctx context.Context, client *container.ClusterManagerClient) bool {
 	_, err := c.get(ctx, client)
 	return err == nil
 }
 
+// Delete GKE cluster
 func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerClient) error {
 	if c.exists(ctx, client) {
 		req := &containerpb.DeleteClusterRequest{
@@ -203,6 +212,7 @@ func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerCl
 	return nil
 }
 
+// Update GKE cluster
 func (c *Cluster) update(ctx context.Context, client *container.ClusterManagerClient) (*containerpb.Cluster, error) {
 	if c.exists(ctx, client) {
 		return c.get(ctx, client)
@@ -285,7 +295,7 @@ cstatus:
 	nreq := &containerpb.UpdateNodePoolRequest{
 		Name:        fmt.Sprintf("projects/%s/locations/%s/clusters/%s/nodePools/default-pool", c.ProjectID, c.Region, c.Name),
 		NodeVersion: "-",
-		ImageType:   cluster.NodeConfig.ImageType,
+		ImageType:   cluster.NodePools[0].Config.ImageType,
 		WorkloadMetadataConfig: &containerpb.WorkloadMetadataConfig{
 			Mode: 2,
 		},

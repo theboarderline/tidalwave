@@ -12,6 +12,7 @@ type Vpc struct {
 	ProjectID string
 }
 
+// Create VPC
 func (n *Vpc) create(ctx context.Context, client *compute.NetworksClient) (*computepb.Network, error) {
 	if n.exists(ctx, client) {
 		return n.get(ctx, client)
@@ -34,6 +35,7 @@ func (n *Vpc) create(ctx context.Context, client *compute.NetworksClient) (*comp
 	return n.get(ctx, client)
 }
 
+// Get VPC
 func (n *Vpc) get(ctx context.Context, client *compute.NetworksClient) (*computepb.Network, error) {
 	req := &computepb.GetNetworkRequest{
 		Project: n.ProjectID,
@@ -46,11 +48,13 @@ func (n *Vpc) get(ctx context.Context, client *compute.NetworksClient) (*compute
 	return resp, nil
 }
 
+// Check if VPC exists
 func (n *Vpc) exists(ctx context.Context, client *compute.NetworksClient) bool {
 	_, err := n.get(ctx, client)
 	return err == nil
 }
 
+// Delete VPC
 func (n *Vpc) delete(ctx context.Context, client *compute.NetworksClient) error {
 	if n.exists(ctx, client) {
 		req := &computepb.DeleteNetworkRequest{
@@ -69,6 +73,7 @@ func (n *Vpc) delete(ctx context.Context, client *compute.NetworksClient) error 
 	return nil
 }
 
+// Update VPC
 func (n *Vpc) update(ctx context.Context, client *compute.NetworksClient) (*computepb.Network, error) {
 	if n.exists(ctx, client) {
 		return n.get(ctx, client)

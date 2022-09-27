@@ -5,6 +5,8 @@ go 1.19
 require (
 	cloud.google.com/go/compute v1.7.0
 	cloud.google.com/go/container v1.4.0
+	cloud.google.com/go/kms v1.4.0
+	cloud.google.com/go/resourcemanager v1.2.0
 	github.com/kyokomi/emoji/v2 v2.2.10
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
@@ -12,6 +14,8 @@ require (
 )
 
 require (
+	cloud.google.com/go v0.102.1 // indirect
+	cloud.google.com/go/iam v0.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
