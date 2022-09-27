@@ -128,6 +128,13 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 						},
 					},
 				},
+				Direction: "INGRESS",
+				SourceRanges: []string{
+					masterIpv4CidrBlock,
+				},
+				TargetTags: []string{
+					"default-pool",
+				},
 			},
 		},
 	}

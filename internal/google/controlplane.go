@@ -84,8 +84,8 @@ func (c *Controlplane) Create() error {
 		if err != nil {
 			return err
 		}
-		emoji.Printf("Controlplane firewallrule %s created :check_mark_button:", c.Firewalls[i].Name)
 	}
+	emoji.Println("Controlplane firewall rules created :check_mark_button:")
 
 	return nil
 }

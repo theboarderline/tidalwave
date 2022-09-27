@@ -21,7 +21,7 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch viper.Get("spec.provider") {
 		case "google":
-			emoji.Println("Delete Google controlplane :joystick:")
+			emoji.Println("Delete Google Controlplane :joystick:")
 			c, err := CreateGoogleControlplane()
 			if err != nil {
 				log.Fatal(err)
