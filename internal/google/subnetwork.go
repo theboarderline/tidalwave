@@ -89,3 +89,40 @@ func (s *Subnetwork) delete(ctx context.Context, client *compute.SubnetworksClie
 	}
 	return nil
 }
+
+func (s *Subnetwork) update(ctx context.Context, client *compute.SubnetworksClient) (*computepb.Subnetwork, error) {
+	if s.exists(ctx, client) {
+		return s.get(ctx, client)
+	}
+	req := &computepb.PatchSubnetworkRequest{
+		SubnetworkResource: &computepb.Subnetwork{
+			IpCidrRange:           &s.NodesCidr,
+			Name:                  &s.Name,
+			Region:                &s.Region,
+			Network:               &s.Network,
+			PrivateIpGoogleAccess: BoolPtr(true),
+			SecondaryIpRanges: []*computepb.SubnetworkSecondaryRange{
+				{
+					IpCidrRange: &s.PodsCidr,
+					RangeName:   StrPtr("pods"),
+				},
+				{
+					IpCidrRange: &s.ServicesCidr,
+					RangeName:   StrPtr("services"),
+				},
+			},
+		},
+		Project:    s.ProjectID,
+		Region:     s.Region,
+		Subnetwork: s.Name,
+	}
+	op, err := client.Patch(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	err = op.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return s.get(ctx, client)
+}

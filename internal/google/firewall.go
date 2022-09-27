@@ -87,3 +87,38 @@ func (f *Firewall) delete(ctx context.Context, client *compute.FirewallsClient) 
 	}
 	return nil
 }
+
+func (f *Firewall) update(ctx context.Context, client *compute.FirewallsClient) (*computepb.Firewall, error) {
+	if f.exists(ctx, client) {
+		return f.get(ctx, client)
+	}
+
+	req := &computepb.PatchFirewallRequest{
+		FirewallResource: &computepb.Firewall{
+			Allowed:           f.Allowed,
+			DestinationRanges: f.DestinationRanges,
+			Direction:         StrPtr(f.Direction),
+			Name:              StrPtr(f.Name),
+			Network:           StrPtr(f.Network),
+			SourceRanges:      f.SourceRanges,
+			SourceTags:        f.SourceTags,
+			TargetTags:        f.TargetTags,
+		},
+		Project:  f.ProjectID,
+		Firewall: f.Name,
+	}
+
+	op, err := client.Patch(ctx, req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = op.Wait(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return f.get(ctx, client)
+}

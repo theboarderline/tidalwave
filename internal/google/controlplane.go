@@ -152,3 +152,69 @@ func (c *Controlplane) Delete() error {
 
 	return nil
 }
+
+func (c *Controlplane) Update() error {
+	ctx := context.Background()
+
+	vpcClient, err := compute.NewNetworksRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer vpcClient.Close()
+	network, err := c.Vpc.update(ctx, vpcClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane VPC updated :check_mark_button:")
+
+	c.Subnetwork.Network = network.GetSelfLink()
+	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer subnetClient.Close()
+	_, err = c.Subnetwork.update(ctx, subnetClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane subnetwork updated :check_mark_button:")
+
+	c.Router.Network = network.GetSelfLink()
+	routerClient, err := compute.NewRoutersRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer routerClient.Close()
+	_, err = c.Router.update(ctx, routerClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane router updated :check_mark_button:")
+
+	clusterClient, err := container.NewClusterManagerClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer clusterClient.Close()
+	_, err = c.Cluster.update(ctx, clusterClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane cluster updated :check_mark_button:")
+
+	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer firewallClient.Close()
+	for i := range c.Firewalls {
+		c.Firewalls[i].Network = network.GetSelfLink()
+		_, err = c.Firewalls[i].update(ctx, firewallClient)
+		if err != nil {
+			return err
+		}
+	}
+	emoji.Println("Controlplane firewall rules updated :check_mark_button:")
+
+	return nil
+}

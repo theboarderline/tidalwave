@@ -68,3 +68,28 @@ func (n *Vpc) delete(ctx context.Context, client *compute.NetworksClient) error 
 	}
 	return nil
 }
+
+func (n *Vpc) update(ctx context.Context, client *compute.NetworksClient) (*computepb.Network, error) {
+	if n.exists(ctx, client) {
+		return n.get(ctx, client)
+	}
+
+	req := &computepb.PatchNetworkRequest{
+		Network: n.Name,
+		NetworkResource: &computepb.Network{
+			AutoCreateSubnetworks: BoolPtr(false),
+			Name:                  &n.Name,
+		},
+		Project: n.ProjectID,
+	}
+	op, err := client.Patch(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	err = op.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.get(ctx, client)
+}
