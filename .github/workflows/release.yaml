@@ -1,11 +1,11 @@
-on: release
-name: Build Release
-jobs:
-  release-darwin-amd64:
-    name: release darwin/amd64
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
+# on: release
+# name: Build Release
+# jobs:
+#   release-darwin-amd64:
+#     name: release darwin/amd64
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2
   #   - name: compile and release
   #     uses: ngs/go-release.action@v1.0.1
   #     env:

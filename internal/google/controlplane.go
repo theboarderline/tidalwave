@@ -78,38 +78,38 @@ func (c *Controlplane) Create() error {
 	}
 	emoji.Println("Controlplane KMS Keyring created :check_mark_button:")
 
-	c.CryptoKey.Keyring = keyring.Name
+	c.CryptoKey.Keyring = keyring.GetName()
 	cryptoKey, err := c.CryptoKey.create(ctx, kmsClient)
 	if err != nil {
 		return err
 	}
 	emoji.Println("Controlplane KMS Crypto Key created :check_mark_button:")
 
-	c.Cluster.CryptoKeyName = cryptoKey.Name
-	// clusterClient, err := container.NewClusterManagerClient(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer clusterClient.Close()
-	// _, err = c.Cluster.create(ctx, clusterClient)
-	// if err != nil {
-	// 	return err
-	// }
-	// emoji.Println("Controlplane cluster created :check_mark_button:")
+	c.Cluster.CryptoKeyName = cryptoKey.GetName()
+	clusterClient, err := container.NewClusterManagerClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer clusterClient.Close()
+	_, err = c.Cluster.create(ctx, clusterClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane cluster created :check_mark_button:")
 
-	// firewallClient, err := compute.NewFirewallsRESTClient(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer firewallClient.Close()
-	// for i := range c.Firewalls {
-	// 	c.Firewalls[i].Network = network.GetSelfLink()
-	// 	_, err = c.Firewalls[i].create(ctx, firewallClient)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// emoji.Println("Controlplane firewall rules created :check_mark_button:")
+	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer firewallClient.Close()
+	for i := range c.Firewalls {
+		c.Firewalls[i].Network = network.GetSelfLink()
+		_, err = c.Firewalls[i].create(ctx, firewallClient)
+		if err != nil {
+			return err
+		}
+	}
+	emoji.Println("Controlplane firewall rules created :check_mark_button:")
 
 	return nil
 }
@@ -141,6 +141,22 @@ func (c *Controlplane) Delete() error {
 		return err
 	}
 	emoji.Println("Controlplane cluster destroyed :cross_mark_button:")
+
+	kmsClient, err := kms.NewKeyManagementClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer kmsClient.Close()
+	keyring, err := c.Keyring.get(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	c.CryptoKey.Keyring = keyring.GetName()
+	err = c.CryptoKey.delete(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane KMS Crypto Key deleted :check_mark_button:")
 
 	routerClient, err := compute.NewRoutersRESTClient(ctx)
 	if err != nil {
@@ -226,37 +242,38 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	c.CryptoKey.Keyring = keyring.Name
-	_, err = c.CryptoKey.update(ctx, kmsClient)
+	c.CryptoKey.Keyring = keyring.GetName()
+	cryptoKey, err := c.CryptoKey.update(ctx, kmsClient)
 	if err != nil {
 		return err
 	}
 	emoji.Println("Controlplane KMS Crypto Key updated :check_mark_button:")
 
-	// clusterClient, err := container.NewClusterManagerClient(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer clusterClient.Close()
-	// _, err = c.Cluster.update(ctx, clusterClient)
-	// if err != nil {
-	// 	return err
-	// }
-	// emoji.Println("Controlplane cluster updated :check_mark_button:")
+	c.Cluster.CryptoKeyName = cryptoKey.GetName()
+	clusterClient, err := container.NewClusterManagerClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer clusterClient.Close()
+	_, err = c.Cluster.update(ctx, clusterClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane cluster updated :check_mark_button:")
 
-	// firewallClient, err := compute.NewFirewallsRESTClient(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer firewallClient.Close()
-	// for i := range c.Firewalls {
-	// 	c.Firewalls[i].Network = network.GetSelfLink()
-	// 	_, err = c.Firewalls[i].update(ctx, firewallClient)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// emoji.Println("Controlplane firewall rules updated :check_mark_button:")
+	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer firewallClient.Close()
+	for i := range c.Firewalls {
+		c.Firewalls[i].Network = network.GetSelfLink()
+		_, err = c.Firewalls[i].update(ctx, firewallClient)
+		if err != nil {
+			return err
+		}
+	}
+	emoji.Println("Controlplane firewall rules updated :check_mark_button:")
 
 	return nil
 }

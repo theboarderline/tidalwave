@@ -7,14 +7,12 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
-	iampb "google.golang.org/genproto/googleapis/iam/v1"
 )
 
 type CryptoKey struct {
 	Name      string
 	Keyring   string
 	ProjectID string
-	// Region    string
 }
 
 func setIam(ctx context.Context, client *kms.KeyManagementClient, id string, key *kmspb.CryptoKey) error {
@@ -23,27 +21,30 @@ func setIam(ctx context.Context, client *kms.KeyManagementClient, id string, key
 		return err
 	}
 	member := fmt.Sprintf("serviceAccount:service-%s@container-engine-robot.iam.gserviceaccount.com", strings.Trim(proj.Name, "projects/"))
-	policy := &iampb.Policy{
-		Bindings: []*iampb.Binding{
-			{
-				Role:    "roles/cloudkms.cryptoKeyDecrypter",
-				Members: []string{member},
-			},
-			{
-				Role:    "roles/cloudkms.cryptoKeyEncrypter",
-				Members: []string{member},
-			},
-		},
-	}
-	iam := &iampb.SetIamPolicyRequest{
-		Resource: key.Name,
-		Policy:   policy,
-	}
-	_, err = client.SetIamPolicy(ctx, iam)
+	handle := client.ResourceIAM(key.GetName())
+	policy, err := handle.Policy(ctx)
 	if err != nil {
 		return err
 	}
-	return nil
+	policy.Add(member, "roles/cloudkms.cryptoKeyDecrypter")
+	policy.Add(member, "roles/cloudkms.cryptoKeyEncrypter")
+	return handle.SetPolicy(ctx, policy)
+}
+
+func removeIam(ctx context.Context, client *kms.KeyManagementClient, id string, key *kmspb.CryptoKey) error {
+	proj, err := getProject(ctx, id)
+	if err != nil {
+		return err
+	}
+	member := fmt.Sprintf("serviceAccount:service-%s@container-engine-robot.iam.gserviceaccount.com", strings.Trim(proj.Name, "projects/"))
+	handle := client.ResourceIAM(key.GetName())
+	policy, err := handle.Policy(ctx)
+	if err != nil {
+		return err
+	}
+	policy.Remove(member, "roles/cloudkms.cryptoKeyDecrypter")
+	policy.Remove(member, "roles/cloudkms.cryptoKeyEncrypter")
+	return handle.SetPolicy(ctx, policy)
 }
 
 // Create KMS Crypto Key
@@ -98,4 +99,12 @@ func (c *CryptoKey) update(ctx context.Context, client *kms.KeyManagementClient)
 		return nil, err
 	}
 	return key, nil
+}
+
+func (c *CryptoKey) delete(ctx context.Context, client *kms.KeyManagementClient) error {
+	key, err := c.get(ctx, client)
+	if err != nil {
+		return err
+	}
+	return removeIam(ctx, client, c.ProjectID, key)
 }
