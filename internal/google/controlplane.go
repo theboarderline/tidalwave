@@ -5,6 +5,7 @@ import (
 
 	compute "cloud.google.com/go/compute/apiv1"
 	container "cloud.google.com/go/container/apiv1"
+	kms "cloud.google.com/go/kms/apiv1"
 	"github.com/kyokomi/emoji/v2"
 )
 
@@ -14,6 +15,8 @@ type Controlplane struct {
 	Router
 	Cluster
 	Firewalls []Firewall
+	Keyring
+	CryptoKey
 }
 
 func BoolPtr(b bool) *bool {
@@ -24,6 +27,7 @@ func StrPtr(s string) *string {
 	return &s
 }
 
+// Create controlplane
 func (c *Controlplane) Create() error {
 	ctx := context.Background()
 
@@ -62,6 +66,26 @@ func (c *Controlplane) Create() error {
 	}
 	emoji.Println("Controlplane router created :check_mark_button:")
 
+	kmsClient, err := kms.NewKeyManagementClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer kmsClient.Close()
+
+	keyring, err := c.Keyring.create(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane KMS Keyring created :check_mark_button:")
+
+	c.CryptoKey.Keyring = keyring.GetName()
+	cryptoKey, err := c.CryptoKey.create(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane KMS Crypto Key created :check_mark_button:")
+
+	c.Cluster.CryptoKeyName = cryptoKey.GetName()
 	clusterClient, err := container.NewClusterManagerClient(ctx)
 	if err != nil {
 		return err
@@ -90,6 +114,7 @@ func (c *Controlplane) Create() error {
 	return nil
 }
 
+// Delete controlplane
 func (c *Controlplane) Delete() error {
 	ctx := context.Background()
 
@@ -103,8 +128,8 @@ func (c *Controlplane) Delete() error {
 		if err != nil {
 			return err
 		}
-		emoji.Printf("Controlplane firewallrule %s deleted :check_mark_button:", c.Firewalls[i].Name)
 	}
+	emoji.Println("Controlplane firewall rules deleted :check_mark_button:")
 
 	clusterClient, err := container.NewClusterManagerClient(ctx)
 	if err != nil {
@@ -116,6 +141,22 @@ func (c *Controlplane) Delete() error {
 		return err
 	}
 	emoji.Println("Controlplane cluster destroyed :cross_mark_button:")
+
+	kmsClient, err := kms.NewKeyManagementClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer kmsClient.Close()
+	keyring, err := c.Keyring.get(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	c.CryptoKey.Keyring = keyring.GetName()
+	err = c.CryptoKey.delete(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane KMS Crypto Key deleted :check_mark_button:")
 
 	routerClient, err := compute.NewRoutersRESTClient(ctx)
 	if err != nil {
@@ -153,6 +194,7 @@ func (c *Controlplane) Delete() error {
 	return nil
 }
 
+// Update controlplane
 func (c *Controlplane) Update() error {
 	ctx := context.Background()
 
@@ -191,6 +233,23 @@ func (c *Controlplane) Update() error {
 	}
 	emoji.Println("Controlplane router updated :check_mark_button:")
 
+	kmsClient, err := kms.NewKeyManagementClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer kmsClient.Close()
+	keyring, err := c.Keyring.get(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	c.CryptoKey.Keyring = keyring.GetName()
+	cryptoKey, err := c.CryptoKey.update(ctx, kmsClient)
+	if err != nil {
+		return err
+	}
+	emoji.Println("Controlplane KMS Crypto Key updated :check_mark_button:")
+
+	c.Cluster.CryptoKeyName = cryptoKey.GetName()
 	clusterClient, err := container.NewClusterManagerClient(ctx)
 	if err != nil {
 		return err

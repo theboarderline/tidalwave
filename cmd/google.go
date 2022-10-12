@@ -20,8 +20,8 @@ func googleDefaults() {
 	viper.SetDefault("spec.cluster.maxNodeCount", 3)
 	viper.SetDefault("spec.cluster.masterAuthBlock", []map[string]string{
 		{
-			"DisplayName": "public",
-			"CidrBlock":   "0.0.0.0/0",
+			"displayName": "public",
+			"cidrBlock":   "0.0.0.0/0",
 		},
 	})
 	viper.SetDefault("spec.cluster.masterCidrBlock", "172.16.0.0/28")
@@ -67,6 +67,15 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 			Name:      name,
 			ProjectID: projectId,
 			Region:    region,
+		},
+		Keyring: google.Keyring{
+			Name:      fmt.Sprintf("%s-controlplane", name),
+			ProjectID: projectId,
+			Region:    region,
+		},
+		CryptoKey: google.CryptoKey{
+			Name:      fmt.Sprintf("%s-controlplane", name),
+			ProjectID: projectId,
 		},
 		Cluster: google.Cluster{
 			Name:                 fmt.Sprintf("%s-controlplane", name),

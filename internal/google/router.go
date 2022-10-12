@@ -14,6 +14,7 @@ type Router struct {
 	Network   string
 }
 
+// Create Cloud Router
 func (r *Router) create(ctx context.Context, client *compute.RoutersClient) (*computepb.Router, error) {
 	if r.exists(ctx, client) {
 		return r.get(ctx, client)
@@ -44,6 +45,7 @@ func (r *Router) create(ctx context.Context, client *compute.RoutersClient) (*co
 	return r.get(ctx, client)
 }
 
+// Get Cloud Router
 func (r *Router) get(ctx context.Context, client *compute.RoutersClient) (*computepb.Router, error) {
 	req := &computepb.GetRouterRequest{
 		Project: r.ProjectID,
@@ -57,11 +59,13 @@ func (r *Router) get(ctx context.Context, client *compute.RoutersClient) (*compu
 	return resp, nil
 }
 
+// Check if Cloud Router exists
 func (r *Router) exists(ctx context.Context, client *compute.RoutersClient) bool {
 	_, err := r.get(ctx, client)
 	return err == nil
 }
 
+// Delete Cloud Router
 func (r *Router) delete(ctx context.Context, client *compute.RoutersClient) error {
 	if r.exists(ctx, client) {
 		req := &computepb.DeleteRouterRequest{
@@ -81,6 +85,7 @@ func (r *Router) delete(ctx context.Context, client *compute.RoutersClient) erro
 	return nil
 }
 
+// Update Cloud Router
 func (r *Router) update(ctx context.Context, client *compute.RoutersClient) (*computepb.Router, error) {
 	if r.exists(ctx, client) {
 		return r.get(ctx, client)

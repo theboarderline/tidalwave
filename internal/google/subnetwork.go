@@ -17,6 +17,7 @@ type Subnetwork struct {
 	ServicesCidr string
 }
 
+// Create subnetwork
 func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClient) (*computepb.Subnetwork, error) {
 	if s.exists(ctx, client) {
 		return s.get(ctx, client)
@@ -53,6 +54,7 @@ func (s *Subnetwork) create(ctx context.Context, client *compute.SubnetworksClie
 	return s.get(ctx, client)
 }
 
+// Get subnetwork
 func (s *Subnetwork) get(ctx context.Context, client *compute.SubnetworksClient) (*computepb.Subnetwork, error) {
 	req := &computepb.GetSubnetworkRequest{
 		Project:    s.ProjectID,
@@ -66,11 +68,13 @@ func (s *Subnetwork) get(ctx context.Context, client *compute.SubnetworksClient)
 	return resp, nil
 }
 
+// Check if subnetwork exists
 func (s *Subnetwork) exists(ctx context.Context, client *compute.SubnetworksClient) bool {
 	_, err := s.get(ctx, client)
 	return err == nil
 }
 
+// Delete subnetwork
 func (s *Subnetwork) delete(ctx context.Context, client *compute.SubnetworksClient) error {
 	if s.exists(ctx, client) {
 		req := &computepb.DeleteSubnetworkRequest{
@@ -90,6 +94,7 @@ func (s *Subnetwork) delete(ctx context.Context, client *compute.SubnetworksClie
 	return nil
 }
 
+// Update subnetwork
 func (s *Subnetwork) update(ctx context.Context, client *compute.SubnetworksClient) (*computepb.Subnetwork, error) {
 	if s.exists(ctx, client) {
 		return s.get(ctx, client)

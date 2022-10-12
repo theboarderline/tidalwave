@@ -19,6 +19,7 @@ type Firewall struct {
 	TargetTags        []string
 }
 
+// Create firewall rule
 func (f *Firewall) create(ctx context.Context, client *compute.FirewallsClient) (*computepb.Firewall, error) {
 	if f.exists(ctx, client) {
 		return f.get(ctx, client)
@@ -53,6 +54,7 @@ func (f *Firewall) create(ctx context.Context, client *compute.FirewallsClient) 
 	return f.get(ctx, client)
 }
 
+// Get firewall rule
 func (f *Firewall) get(ctx context.Context, client *compute.FirewallsClient) (*computepb.Firewall, error) {
 	req := &computepb.GetFirewallRequest{
 		Firewall: f.Name,
@@ -65,11 +67,13 @@ func (f *Firewall) get(ctx context.Context, client *compute.FirewallsClient) (*c
 	return resp, nil
 }
 
+// Check if firewall rule exists
 func (f *Firewall) exists(ctx context.Context, client *compute.FirewallsClient) bool {
 	_, err := f.get(ctx, client)
 	return err == nil
 }
 
+// Delete firewall rule
 func (f *Firewall) delete(ctx context.Context, client *compute.FirewallsClient) error {
 	if f.exists(ctx, client) {
 		req := &computepb.DeleteFirewallRequest{
@@ -88,6 +92,7 @@ func (f *Firewall) delete(ctx context.Context, client *compute.FirewallsClient) 
 	return nil
 }
 
+// Update firewall rule
 func (f *Firewall) update(ctx context.Context, client *compute.FirewallsClient) (*computepb.Firewall, error) {
 	if f.exists(ctx, client) {
 		return f.get(ctx, client)
