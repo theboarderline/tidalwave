@@ -24,4 +24,4 @@ jobs:
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         goversion: 1.19
-        ldflags: "-X 'tidalwave/cmd.Version=$env:GITHUB_REF'"
+        ldflags: "-X 'tidalwave/cmd.Version=${{ github.ref_name }}'"
