@@ -7,6 +7,7 @@ import (
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
 )
 
+// Vpc represents a VPC
 type Vpc struct {
 	Name      string
 	ProjectID string

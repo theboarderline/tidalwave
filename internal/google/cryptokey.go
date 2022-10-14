@@ -9,6 +9,7 @@ import (
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
 )
 
+// CryptoKey represents a KMS Crypto Key
 type CryptoKey struct {
 	Name          string
 	Keyring       string

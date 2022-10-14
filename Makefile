@@ -11,6 +11,16 @@ BIN = $(DIST)/tidalwave
 directories:
 	$(MKDIR) $(DIST)
 
+dependencies:
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+
+vet: dependencies
+	go vet ./... ;\
+	staticcheck ./... ./...
+
+test: vet
+	go test -v ./...
+
 build-darwin-amd64: directories
 	GOARCH=amd64 GOOS=darwin $(GO) build -v -ldflags=$(LDFLAGS) -o $(BIN)-darwin-amd64 main.go
 

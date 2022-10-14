@@ -9,6 +9,7 @@ import (
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
 )
 
+// Cluster represents a GKE cluster
 type Cluster struct {
 	Name                 string
 	ProjectID            string

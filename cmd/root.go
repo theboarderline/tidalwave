@@ -1,4 +1,5 @@
 /*
+Package cmd is the entrypoint the for cli
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
@@ -13,6 +14,7 @@ import (
 
 var cfgFile string
 
+// Version is the version of the cli
 var Version string
 
 // rootCmd represents the base command when called without any subcommands

@@ -17,7 +17,7 @@ metadata:
   name: mycluster
 spec:
   provider: # google
-  projectId: myproject
+  projectID: myproject
   region: # us-central1
   cidrs:
     nodes: # 10.0.0.0/24

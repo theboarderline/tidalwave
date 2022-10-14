@@ -9,6 +9,7 @@ import (
 	"github.com/kyokomi/emoji/v2"
 )
 
+// Controlplane contains values for a GKE clutser and its dependencies
 type Controlplane struct {
 	Vpc
 	Subnetwork
@@ -19,10 +20,12 @@ type Controlplane struct {
 	CryptoKey
 }
 
+// BoolPtr convertes a bool to *bool
 func BoolPtr(b bool) *bool {
 	return &b
 }
 
+// StrPtr convertes a string to *string
 func StrPtr(s string) *string {
 	return &s
 }

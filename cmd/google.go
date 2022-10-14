@@ -1,9 +1,14 @@
+/*
+Package cmd is the entrypoint the for cli
+*/
 package cmd
 
 import (
 	"fmt"
 	"log"
 	"tidalwave/internal/google"
+
+	"tidalwave/internal/tidalwave"
 
 	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/viper"
@@ -28,21 +33,23 @@ func googleDefaults() {
 	viper.SetDefault("spec.cluster.masterCidrBlock", "172.16.0.0/28")
 }
 
+// CreateGoogleControlplane creates google.Controlplane from options form the config file
 func CreateGoogleControlplane() (*google.Controlplane, error) {
 	googleDefaults()
 	name := viper.GetString("metadata.name")
 	if name == "" {
 		log.Fatalln("metadata.name cannot be nil")
 	}
-	projectId := viper.GetString("spec.projectId")
-	if projectId == "" {
-		log.Fatalln("spec.projectId cannot be nil")
+	name = tidalwave.NameFormatter(name)
+	projectID := viper.GetString("spec.projectID")
+	if projectID == "" {
+		log.Fatalln("spec.projectID cannot be nil")
 	}
-	projectNumber, err := google.GetProjectNumber(projectId)
+	projectNumber, err := google.GetProjectNumber(projectID)
 	if err != nil {
-		log.Fatalf("project-id %s not found: %s\n", projectId, err)
+		log.Fatalf("project-id %s not found: %s\n", projectID, err)
 	}
-	emoji.Printf(":bullseye: Project Id: %s\n", projectId)
+	emoji.Printf(":bullseye: Project Id: %s\n", projectID)
 	emoji.Printf(":bullseye: Project Number: %s\n", *projectNumber)
 	region := viper.GetString("spec.region")
 	nodesCidr := viper.GetString("spec.cidrs.nodes")
@@ -60,11 +67,11 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 	cp := google.Controlplane{
 		Vpc: google.Vpc{
 			Name:      name,
-			ProjectID: projectId,
+			ProjectID: projectID,
 		},
 		Subnetwork: google.Subnetwork{
 			Name:         fmt.Sprintf("%s-controlplane", name),
-			ProjectID:    projectId,
+			ProjectID:    projectID,
 			Region:       region,
 			NodesCidr:    nodesCidr,
 			PodsCidr:     podCidr,
@@ -72,22 +79,22 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 		},
 		Router: google.Router{
 			Name:      name,
-			ProjectID: projectId,
+			ProjectID: projectID,
 			Region:    region,
 		},
 		Keyring: google.Keyring{
 			Name:      fmt.Sprintf("%s-controlplane", name),
-			ProjectID: projectId,
+			ProjectID: projectID,
 			Region:    region,
 		},
 		CryptoKey: google.CryptoKey{
 			Name:          fmt.Sprintf("%s-controlplane", name),
-			ProjectID:     projectId,
+			ProjectID:     projectID,
 			ProjectNumber: *projectNumber,
 		},
 		Cluster: google.Cluster{
 			Name:                 fmt.Sprintf("%s-controlplane", name),
-			ProjectID:            projectId,
+			ProjectID:            projectID,
 			Region:               region,
 			Network:              name,
 			Subnetwork:           fmt.Sprintf("%s-controlplane", name),
@@ -101,7 +108,7 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 		Firewalls: []google.Firewall{
 			{
 				Name:      fmt.Sprintf("%s-intra-cluster-egress", name),
-				ProjectID: projectId,
+				ProjectID: projectID,
 				Allowed: []*computepb.Allowed{
 					{
 						IPProtocol: google.StrPtr("tcp"),
@@ -134,7 +141,7 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 			},
 			{
 				Name:      fmt.Sprintf("%s-webhooks", name),
-				ProjectID: projectId,
+				ProjectID: projectID,
 				Allowed: []*computepb.Allowed{
 					{
 						IPProtocol: google.StrPtr("tcp"),
