@@ -7,6 +7,7 @@ import (
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
 )
 
+// Router represents a VPC Cloud Router and Cloud Nat
 type Router struct {
 	Name      string
 	ProjectID string

@@ -7,6 +7,7 @@ import (
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
 )
 
+// Subnetwork represents a VPC subnetwork
 type Subnetwork struct {
 	Name         string
 	ProjectID    string

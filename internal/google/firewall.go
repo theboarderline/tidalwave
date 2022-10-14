@@ -7,6 +7,7 @@ import (
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
 )
 
+// Firewall represents a VPC firewall rule
 type Firewall struct {
 	Name              string
 	ProjectID         string

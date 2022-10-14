@@ -9,6 +9,7 @@ import (
 	resourcemanagerpb "google.golang.org/genproto/googleapis/cloud/resourcemanager/v3"
 )
 
+// GetProjectNumber returns a GCP project number from a GCP project id
 func GetProjectNumber(id string) (*string, error) {
 	ctx := context.Background()
 	client, err := resource.NewProjectsClient(ctx)

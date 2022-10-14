@@ -8,6 +8,7 @@ import (
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
 )
 
+// Keyring represents a KMS Keyring
 type Keyring struct {
 	Name      string
 	ProjectID string
