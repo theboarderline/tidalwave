@@ -5,6 +5,7 @@ import (
 	"log"
 	"tidalwave/internal/google"
 
+	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/viper"
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
@@ -37,6 +38,12 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 	if projectId == "" {
 		log.Fatalln("spec.projectId cannot be nil")
 	}
+	projectNumber, err := google.GetProjectNumber(projectId)
+	if err != nil {
+		log.Fatalf("project-id %s not found: %s\n", projectId, err)
+	}
+	emoji.Printf(":bullseye: Project Id: %s\n", projectId)
+	emoji.Printf(":bullseye: Project Number: %s\n", *projectNumber)
 	region := viper.GetString("spec.region")
 	nodesCidr := viper.GetString("spec.cidrs.nodes")
 	podCidr := viper.GetString("spec.cidrs.pods")
@@ -74,8 +81,9 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 			Region:    region,
 		},
 		CryptoKey: google.CryptoKey{
-			Name:      fmt.Sprintf("%s-controlplane", name),
-			ProjectID: projectId,
+			Name:          fmt.Sprintf("%s-controlplane", name),
+			ProjectID:     projectId,
+			ProjectNumber: *projectNumber,
 		},
 		Cluster: google.Cluster{
 			Name:                 fmt.Sprintf("%s-controlplane", name),
