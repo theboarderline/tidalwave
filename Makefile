@@ -12,11 +12,11 @@ directories:
 	$(MKDIR) $(DIST)
 
 dependencies:
-	go get -u golang.org/x/lint/golint
+	go install honnef.co/go/tools/cmd/staticcheck@latest
 
 vet: dependencies
 	go vet ./... ;\
-	golint -set_exit_status ./...
+	staticcheck ./... ./...
 
 test: vet
 	go test -v ./...
