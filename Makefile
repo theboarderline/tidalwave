@@ -11,6 +11,16 @@ BIN = $(DIST)/tidalwave
 directories:
 	$(MKDIR) $(DIST)
 
+dependencies:
+	go get -u golang.org/x/lint/golint
+
+vet: dependencies
+	go vet ./... ;\
+	golint -set_exit_status ./...
+
+test: vet
+	go test -v ./...
+
 build-darwin-amd64: directories
 	GOARCH=amd64 GOOS=darwin $(GO) build -v -ldflags=$(LDFLAGS) -o $(BIN)-darwin-amd64 main.go
 

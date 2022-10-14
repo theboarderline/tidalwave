@@ -1,5 +1,7 @@
 package tidalwave
 
+import "strings"
+
 type ClusterCreater interface {
 	Create() error
 }
@@ -34,4 +36,8 @@ func UpdateCluster(c ClusterUpdater) error {
 		return err
 	}
 	return nil
+}
+
+func NameFormatter(s string) string {
+	return strings.TrimSuffix(s, "-controlplane")
 }

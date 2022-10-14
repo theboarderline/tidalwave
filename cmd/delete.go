@@ -1,4 +1,5 @@
 /*
+Package cmd is the entrypoint the for cli
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
