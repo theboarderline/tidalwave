@@ -10,8 +10,8 @@ import (
 // controlplaneCmd represents the controlplane command
 var controlplaneCmd = &cobra.Command{
 	Use:   "controlplane",
-	Short: "Create/Modify/Delete a DevOps controlplane",
-	Long:  "Create/Modify/Delete a DevOps controlplane",
+	Short: "Create/Update/Delete a DevOps controlplane",
+	Long:  "Create/Update/Delete a DevOps controlplane",
 }
 
 func init() {

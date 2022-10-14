@@ -21,7 +21,7 @@ var updateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch viper.Get("spec.provider") {
 		case "google":
-			emoji.Println("Update Google Controlplane :joystick:")
+			emoji.Println(":joystick: Update Google Controlplane")
 			c, err := CreateGoogleControlplane()
 			if err != nil {
 				log.Fatal(err)

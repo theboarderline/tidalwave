@@ -21,7 +21,7 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch viper.Get("spec.provider") {
 		case "google":
-			emoji.Println("Create Google Controlplane :joystick:")
+			emoji.Println(":joystick: Create Google Controlplane")
 			c, err := CreateGoogleControlplane()
 			if err != nil {
 				log.Fatal(err)

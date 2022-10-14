@@ -40,7 +40,7 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane VPC created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane VPC created")
 
 	c.Subnetwork.Network = network.GetSelfLink()
 	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
@@ -52,7 +52,7 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane subnetwork created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane subnetwork created")
 
 	c.Router.Network = network.GetSelfLink()
 	routerClient, err := compute.NewRoutersRESTClient(ctx)
@@ -64,7 +64,7 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane router created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane router created")
 
 	kmsClient, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
@@ -76,14 +76,14 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane KMS Keyring created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane KMS Keyring created")
 
 	c.CryptoKey.Keyring = keyring.GetName()
 	cryptoKey, err := c.CryptoKey.create(ctx, kmsClient)
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane KMS Crypto Key created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane KMS Crypto Key created")
 
 	c.Cluster.CryptoKeyName = cryptoKey.GetName()
 	clusterClient, err := container.NewClusterManagerClient(ctx)
@@ -95,7 +95,7 @@ func (c *Controlplane) Create() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane cluster created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane cluster created")
 
 	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *Controlplane) Create() error {
 			return err
 		}
 	}
-	emoji.Println("Controlplane firewall rules created :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane firewall rules created")
 
 	return nil
 }
@@ -129,7 +129,7 @@ func (c *Controlplane) Delete() error {
 			return err
 		}
 	}
-	emoji.Println("Controlplane firewall rules deleted :check_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane firewall rules deleted")
 
 	clusterClient, err := container.NewClusterManagerClient(ctx)
 	if err != nil {
@@ -140,7 +140,7 @@ func (c *Controlplane) Delete() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane cluster destroyed :cross_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane cluster destroyed")
 
 	kmsClient, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
@@ -156,7 +156,7 @@ func (c *Controlplane) Delete() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane KMS Crypto Key deleted :check_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane KMS Crypto Key IAM permissions deleted")
 
 	routerClient, err := compute.NewRoutersRESTClient(ctx)
 	if err != nil {
@@ -167,7 +167,7 @@ func (c *Controlplane) Delete() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane router destroyed :cross_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane router destroyed")
 
 	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
 	if err != nil {
@@ -178,7 +178,7 @@ func (c *Controlplane) Delete() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane subnetwork destroyed :cross_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane subnetwork destroyed")
 
 	vpcClient, err := compute.NewNetworksRESTClient(ctx)
 	if err != nil {
@@ -189,7 +189,7 @@ func (c *Controlplane) Delete() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane VPC destroyed :cross_mark_button:")
+	emoji.Println(":cross_mark_button: Controlplane VPC destroyed")
 
 	return nil
 }
@@ -207,7 +207,7 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane VPC updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane VPC updated")
 
 	c.Subnetwork.Network = network.GetSelfLink()
 	subnetClient, err := compute.NewSubnetworksRESTClient(ctx)
@@ -219,7 +219,7 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane subnetwork updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane subnetwork updated")
 
 	c.Router.Network = network.GetSelfLink()
 	routerClient, err := compute.NewRoutersRESTClient(ctx)
@@ -231,7 +231,7 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane router updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane router updated")
 
 	kmsClient, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
@@ -247,7 +247,7 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane KMS Crypto Key updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane KMS Crypto Key updated")
 
 	c.Cluster.CryptoKeyName = cryptoKey.GetName()
 	clusterClient, err := container.NewClusterManagerClient(ctx)
@@ -259,7 +259,7 @@ func (c *Controlplane) Update() error {
 	if err != nil {
 		return err
 	}
-	emoji.Println("Controlplane cluster updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane cluster updated")
 
 	firewallClient, err := compute.NewFirewallsRESTClient(ctx)
 	if err != nil {
@@ -273,7 +273,7 @@ func (c *Controlplane) Update() error {
 			return err
 		}
 	}
-	emoji.Println("Controlplane firewall rules updated :check_mark_button:")
+	emoji.Println(":check_mark_button: Controlplane firewall rules updated")
 
 	return nil
 }
