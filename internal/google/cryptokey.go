@@ -7,6 +7,7 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 // CryptoKey represents a KMS Crypto Key
@@ -89,14 +90,66 @@ func (c *CryptoKey) exists(ctx context.Context, client *kms.KeyManagementClient)
 	}
 	switch k.GetPrimary().State {
 	case kmspb.CryptoKeyVersion_DISABLED:
-		log.Printf("cryptokey %s is disabled", k.GetName())
+		log.Printf("cryptokey %s is disabled\n", k.GetName())
+		req := &kmspb.UpdateCryptoKeyVersionRequest{
+			CryptoKeyVersion: &kmspb.CryptoKeyVersion{
+				Name:  k.GetPrimary().GetName(),
+				State: kmspb.CryptoKeyVersion_ENABLED,
+			},
+			UpdateMask: &fieldmaskpb.FieldMask{
+				Paths: []string{"state"},
+			},
+		}
+		kv, err := client.UpdateCryptoKeyVersion(ctx, req)
+	status:
+		for {
+			ks, err := client.GetCryptoKeyVersion(ctx, &kmspb.GetCryptoKeyVersionRequest{
+				Name: kv.GetName(),
+			})
+			if err != nil {
+				log.Println(err)
+				return nil, false
+			}
+			if ks.GetState() == kmspb.CryptoKeyVersion_ENABLED {
+				break status
+			}
+		}
+		if err != nil {
+			log.Println(err)
+			return nil, false
+		}
 		return k, false
-	case kmspb.CryptoKeyVersion_DESTROYED:
-		log.Printf("cryptokey %s is destroyed", k.GetName())
-		return k, false
-	case kmspb.CryptoKeyVersion_DESTROY_SCHEDULED:
-		log.Printf("cryptokey %s is scheduled to be destroyed", k.GetName())
-		return k, false
+		// case kmspb.CryptoKeyVersion_DESTROYED:
+		// 	log.Printf("cryptokey %s is destroyed\n", k.GetName())
+		// 	req := &kmspb.CreateCryptoKeyVersionRequest{
+		// 		Parent: k.GetName(),
+		// 	}
+		// 	kv, err := client.CreateCryptoKeyVersion(ctx, req)
+		// 	if err != nil {
+		// 		log.Println(err)
+		// 		return nil, false
+		// 	}
+		// 	updateReq := &kmspb.UpdateCryptoKeyPrimaryVersionRequest{
+		// 		Name:               k.GetName(),
+		// 		CryptoKeyVersionId: kv.GetName(),
+		// 	}
+		// 	_, err = client.UpdateCryptoKeyPrimaryVersion(ctx, updateReq)
+		// 	if err != nil {
+		// 		log.Println(err)
+		// 		return nil, false
+		// 	}
+		// 	return k, true
+		// case kmspb.CryptoKeyVersion_DESTROY_SCHEDULED:
+		// 	log.Printf("cryptokey %s is scheduled to be destroyed\n", k.GetName())
+		// 	req := &kmspb.RestoreCryptoKeyVersionRequest{
+		// 		Name: k.GetPrimary().GetName(),
+		// 	}
+		// 	_, err := client.RestoreCryptoKeyVersion(ctx, req)
+		// 	if err != nil {
+		// 		log.Println(err)
+		// 		return nil, false
+		// 	}
+		// 	return k, true
 	}
 	return k, err == nil
 }
