@@ -84,6 +84,9 @@ func (c *CryptoKey) get(ctx context.Context, client *kms.KeyManagementClient) (*
 // Check if KMS Crypto Key exists
 func (c *CryptoKey) exists(ctx context.Context, client *kms.KeyManagementClient) (*kmspb.CryptoKey, bool) {
 	k, err := c.get(ctx, client)
+	if err != nil {
+		return nil, false
+	}
 	switch k.GetPrimary().State {
 	case kmspb.CryptoKeyVersion_DISABLED:
 		log.Printf("cryptokey %s is disabled", k.GetName())
