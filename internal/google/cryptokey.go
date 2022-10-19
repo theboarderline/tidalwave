@@ -63,7 +63,7 @@ func (c *CryptoKey) create(ctx context.Context, client *kms.KeyManagementClient)
 	if err != nil {
 		return nil, err
 	}
-	if err := setIam(ctx, client, c.ProjectID, resp); err != nil {
+	if err := setIam(ctx, client, c.ProjectNumber, resp); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -104,7 +104,7 @@ func (c *CryptoKey) update(ctx context.Context, client *kms.KeyManagementClient)
 	if err != nil {
 		return nil, err
 	}
-	if err := setIam(ctx, client, c.ProjectID, key); err != nil {
+	if err := setIam(ctx, client, c.ProjectNumber, key); err != nil {
 		return nil, err
 	}
 	return key, nil
@@ -115,5 +115,5 @@ func (c *CryptoKey) delete(ctx context.Context, client *kms.KeyManagementClient)
 	if err != nil {
 		return err
 	}
-	return removeIam(ctx, client, c.ProjectID, key)
+	return removeIam(ctx, client, c.ProjectNumber, key)
 }
