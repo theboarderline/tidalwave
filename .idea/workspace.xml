@@ -5,10 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe032598-d600-4ac2-a944-210e4bb5f272" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/cmd/google.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/google.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/google/cryptokey.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/google/cryptokey.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/tidalwave/tidalwave.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/tidalwave/tidalwave.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/tidalwave/tidalwave_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/tidalwave/tidalwave_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
