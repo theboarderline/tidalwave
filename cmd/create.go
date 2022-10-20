@@ -27,6 +27,9 @@ var createCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal(err)
 			}
+			if err := tidalwave.CheckApis(c); err != nil {
+				log.Fatal(err)
+			}
 			err = tidalwave.CreateCluster(c)
 			if err != nil {
 				log.Fatal(err)

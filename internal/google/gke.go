@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/kyokomi/emoji/v2"
+	"time"
 
 	container "cloud.google.com/go/container/apiv1"
 	containerpb "google.golang.org/genproto/googleapis/container/v1"
 )
+//counter is used to check status
+var counter int
 
 // Cluster represents a GKE cluster
 type Cluster struct {
@@ -149,6 +153,10 @@ func (c *Cluster) create(ctx context.Context, client *container.ClusterManagerCl
 
 status:
 	for {
+		if counter%10==0 {
+			emoji.Println(":beer: Cluster is being created")
+			time.Sleep(time.Second*30)
+		}
 		s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
 			Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),
 		})
@@ -161,6 +169,7 @@ status:
 		case 4:
 			return nil, errors.New(s.GetError().Message)
 		}
+		counter++
 	}
 	return c.get(ctx, client)
 }
@@ -196,6 +205,10 @@ func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerCl
 		}
 	status:
 		for {
+			if counter%10==0 {
+				emoji.Println(":beer: Cluster is being deleted")
+				time.Sleep(time.Second*30)
+			}
 			s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
 				Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),
 			})
@@ -208,6 +221,7 @@ func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerCl
 			case 4:
 				return errors.New(s.GetError().Message)
 			}
+			counter++
 		}
 	}
 	return nil
