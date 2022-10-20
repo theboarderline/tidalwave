@@ -8,8 +8,6 @@ import (
 	"log"
 	"tidalwave/internal/google"
 
-	"tidalwave/internal/tidalwave"
-
 	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/viper"
 	computepb "google.golang.org/genproto/googleapis/cloud/compute/v1"
@@ -40,7 +38,6 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 	if name == "" {
 		log.Fatalln("metadata.name cannot be nil")
 	}
-	name = tidalwave.NameFormatter(name)
 	projectID := viper.GetString("spec.projectID")
 	if projectID == "" {
 		log.Fatalln("spec.projectID cannot be nil")
@@ -71,7 +68,7 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 			ProjectID: projectID,
 		},
 		Subnetwork: google.Subnetwork{
-			Name:         fmt.Sprintf("%s-controlplane", name),
+			Name:         name,
 			ProjectID:    projectID,
 			Region:       region,
 			NodesCidr:    nodesCidr,
@@ -84,21 +81,21 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 			Region:    region,
 		},
 		Keyring: google.Keyring{
-			Name:      fmt.Sprintf("%s-controlplane", name),
+			Name:      name,
 			ProjectID: projectID,
 			Region:    region,
 		},
 		CryptoKey: google.CryptoKey{
-			Name:          fmt.Sprintf("%s-controlplane", name),
+			Name:          name,
 			ProjectID:     projectID,
 			ProjectNumber: *projectNumber,
 		},
 		Cluster: google.Cluster{
-			Name:                 fmt.Sprintf("%s-controlplane", name),
+			Name:                 name,
 			ProjectID:            projectID,
 			Region:               region,
 			Network:              name,
-			Subnetwork:           fmt.Sprintf("%s-controlplane", name),
+			Subnetwork:           name,
 			MachineType:          machineType,
 			DiskSizeGb:           diskSize,
 			MinNodeCount:         minNodes,

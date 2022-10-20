@@ -1,9 +1,5 @@
 package tidalwave
 
-import (
-	"strings"
-)
-
 // ClusterCreater provides cluster creation
 type ClusterCreater interface {
 	Create() error
@@ -53,9 +49,4 @@ func UpdateCluster(c ClusterUpdater) error {
 		return err
 	}
 	return nil
-}
-
-// NameFormatter removes -controlplane from cluster resource names if it exists
-func NameFormatter(s string) string {
-	return strings.TrimSuffix(s, "-controlplane")
 }
