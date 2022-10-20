@@ -155,7 +155,7 @@ status:
 	for {
 		if counter%10==0 {
 			emoji.Println(":beer: Cluster is being created")
-			time.Sleep(time.Second*10)
+			time.Sleep(time.Second*30)
 		}
 		s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
 			Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),
@@ -207,7 +207,7 @@ func (c *Cluster) delete(ctx context.Context, client *container.ClusterManagerCl
 		for {
 			if counter%10==0 {
 				emoji.Println(":beer: Cluster is being deleted")
-				time.Sleep(time.Second*10)
+				time.Sleep(time.Second*30)
 			}
 			s, err := client.GetOperation(ctx, &containerpb.GetOperationRequest{
 				Name: fmt.Sprintf("projects/%s/locations/%s/operations/%s", c.ProjectID, c.Region, op.GetName()),

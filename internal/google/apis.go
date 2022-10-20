@@ -38,6 +38,9 @@ func (r *Controlplane) EnableApis() (error) {
 	}
 
 	operation, err := c.BatchEnableServices(ctx, req)
+	if err != nil {
+		return err
+	}
 	resp, err := operation.Wait(ctx)
 	if err != nil {
 		return err
