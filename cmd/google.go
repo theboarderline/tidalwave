@@ -65,6 +65,7 @@ func CreateGoogleControlplane() (*google.Controlplane, error) {
 	}
 	masterIpv4CidrBlock := viper.GetString("spec.cluster.masterCidrBlock")
 	cp := google.Controlplane{
+		Apis: google.RequiredApis.Services,
 		Vpc: google.Vpc{
 			Name:      name,
 			ProjectID: projectID,

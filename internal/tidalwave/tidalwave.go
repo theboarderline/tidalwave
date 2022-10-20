@@ -1,10 +1,21 @@
 package tidalwave
 
-import "strings"
+import (
+	"strings"
+)
 
 // ClusterCreater provides cluster creation
 type ClusterCreater interface {
 	Create() error
+	EnableApis() error
+}
+
+//CreateApis implements the ClusterCreater interface to enable apis
+func CheckApis(c ClusterCreater) (error) {
+	if err := c.EnableApis(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // CreateCluster creates a cluster and dependencies

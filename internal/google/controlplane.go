@@ -11,6 +11,7 @@ import (
 
 // Controlplane contains values for a GKE clutser and its dependencies
 type Controlplane struct {
+	Apis []string
 	Vpc
 	Subnetwork
 	Router
