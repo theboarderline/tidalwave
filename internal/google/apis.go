@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/kyokomi/emoji/v2"
-
-	//"github.com/kyokomi/emoji/v2"
 	serviceusagepb "google.golang.org/genproto/googleapis/api/serviceusage/v1"
 )
 
@@ -24,7 +22,8 @@ var RequiredApis = Apis{
 	},
 }
 
-func (r *Controlplane) EnableApis() (error) {
+// EnableApis will enable any apis in the list that arent already enabled
+func (r *Controlplane) EnableApis() error {
 	ctx := context.Background()
 	c, err := serviceusage.NewClient(ctx)
 	if err != nil {
@@ -32,8 +31,8 @@ func (r *Controlplane) EnableApis() (error) {
 	}
 	defer c.Close()
 
-	req  := &serviceusagepb.BatchEnableServicesRequest{
-		Parent: fmt.Sprintf("projects/%s", r.ProjectNumber),
+	req := &serviceusagepb.BatchEnableServicesRequest{
+		Parent:     fmt.Sprintf("projects/%s", r.ProjectNumber),
 		ServiceIds: RequiredApis.Services,
 	}
 
