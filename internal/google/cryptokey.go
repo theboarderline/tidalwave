@@ -7,6 +7,7 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 // CryptoKey represents a KMS Crypto Key
@@ -48,6 +49,10 @@ func (c *CryptoKey) create(ctx context.Context, client *kms.KeyManagementClient)
 		if err := setIam(ctx, client, c.ProjectNumber, k); err != nil {
 			return nil, err
 		}
+		_, err := c.checkVersion(ctx, client, k)
+		if err != nil {
+			return nil, err
+		}
 		return c.get(ctx, client)
 	}
 	cryptoKey := &kmspb.CryptoKey{
@@ -87,18 +92,38 @@ func (c *CryptoKey) exists(ctx context.Context, client *kms.KeyManagementClient)
 	if err != nil {
 		return nil, false
 	}
-	switch k.GetPrimary().State {
-	case kmspb.CryptoKeyVersion_DISABLED:
-		log.Printf("cryptokey %s is disabled", k.GetName())
-		return k, false
-	case kmspb.CryptoKeyVersion_DESTROYED:
-		log.Printf("cryptokey %s is destroyed", k.GetName())
-		return k, false
-	case kmspb.CryptoKeyVersion_DESTROY_SCHEDULED:
-		log.Printf("cryptokey %s is scheduled to be destroyed", k.GetName())
-		return k, false
-	}
 	return k, err == nil
+}
+
+func (c *CryptoKey) checkVersion(ctx context.Context, client *kms.KeyManagementClient, k *kmspb.CryptoKey) (*kmspb.CryptoKeyVersion, error) {
+	kv := k.GetPrimary()
+	switch kv.State {
+	case kmspb.CryptoKeyVersion_DISABLED:
+		log.Printf("cryptokey version %s is disabled\n", k.GetName())
+		ks, err := enableKeyVersion(ctx, client, kv)
+		if err != nil {
+			return ks, err
+		}
+		return ks, nil
+	case kmspb.CryptoKeyVersion_DESTROYED:
+		log.Printf("cryptokey %s is destroyed\n", k.GetName())
+		ks, err := createKeyVersion(ctx, client, k)
+		if err != nil {
+			return ks, err
+		}
+	case kmspb.CryptoKeyVersion_DESTROY_SCHEDULED:
+		log.Printf("cryptokey %s is scheduled to be destroyed\n", k.GetName())
+		ks, err := restoreKeyVersion(ctx, client, kv)
+		if err != nil {
+			return ks, err
+		}
+		ks, err = enableKeyVersion(ctx, client, ks)
+		if err != nil {
+			return ks, err
+		}
+		return ks, nil
+	}
+	return kv, nil
 }
 
 // Update KMS Crypto Key
@@ -119,4 +144,76 @@ func (c *CryptoKey) delete(ctx context.Context, client *kms.KeyManagementClient)
 		return err
 	}
 	return removeIam(ctx, client, c.ProjectNumber, key)
+}
+
+func enableKeyVersion(ctx context.Context, client *kms.KeyManagementClient, k *kmspb.CryptoKeyVersion) (*kmspb.CryptoKeyVersion, error) {
+	req := &kmspb.UpdateCryptoKeyVersionRequest{
+		CryptoKeyVersion: &kmspb.CryptoKeyVersion{
+			Name:  k.GetName(),
+			State: kmspb.CryptoKeyVersion_ENABLED,
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{
+			Paths: []string{"state"},
+		},
+	}
+	kv, err := client.UpdateCryptoKeyVersion(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	var ks *kmspb.CryptoKeyVersion
+status:
+	for {
+		ks, err := client.GetCryptoKeyVersion(ctx, &kmspb.GetCryptoKeyVersionRequest{
+			Name: kv.GetName(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		if ks.GetState() == kmspb.CryptoKeyVersion_ENABLED {
+			break status
+		}
+	}
+	return ks, nil
+}
+
+func createKeyVersion(ctx context.Context, client *kms.KeyManagementClient, k *kmspb.CryptoKey) (*kmspb.CryptoKeyVersion, error) {
+	req := &kmspb.CreateCryptoKeyVersionRequest{
+		Parent: k.GetName(),
+	}
+	kv, err := client.CreateCryptoKeyVersion(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	updateReq := &kmspb.UpdateCryptoKeyPrimaryVersionRequest{
+		Name:               k.GetName(),
+		CryptoKeyVersionId: kv.GetName(),
+	}
+	_, err = client.UpdateCryptoKeyPrimaryVersion(ctx, updateReq)
+	if err != nil {
+		return nil, err
+	}
+	return kv, nil
+}
+
+func restoreKeyVersion(ctx context.Context, client *kms.KeyManagementClient, k *kmspb.CryptoKeyVersion) (*kmspb.CryptoKeyVersion, error) {
+	req := &kmspb.RestoreCryptoKeyVersionRequest{
+		Name: k.GetName(),
+	}
+	kv, err := client.RestoreCryptoKeyVersion(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+status:
+	for {
+		ks, err := client.GetCryptoKeyVersion(ctx, &kmspb.GetCryptoKeyVersionRequest{
+			Name: kv.GetName(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		if ks.GetState() == kmspb.CryptoKeyVersion_DISABLED {
+			break status
+		}
+	}
+	return kv, nil
 }
