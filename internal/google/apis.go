@@ -15,10 +15,12 @@ type Apis struct {
 // RequiredApis is a static declaration of required Apis - should be vetted to be comprehensive
 var RequiredApis = Apis{
 	Services: []string{
+		"cloudresourcemanager.googleapis.com",
 		"cloudkms.googleapis.com",
 		"compute.googleapis.com",
 		"container.googleapis.com",
 		"iam.googleapis.com",
+		"serviceusage.googleapis.com",
 	},
 }
 
